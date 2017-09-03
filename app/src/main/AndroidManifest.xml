@@ -26,7 +26,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Inbox"></activity>
+        <activity android:name=".InboxActivity"></activity>
+        
+        <provider
+            android:name="com.nehvin.smsapp.data.MessageSenderContentProvider"
+            android:authorities="com.nehvin.smsapp"
+            android:exported="false"/>
     </application>
 
 </manifest>

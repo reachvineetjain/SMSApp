@@ -4,7 +4,9 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +20,27 @@ import java.util.Date;
 public class InboxFragment extends Fragment {
 
 //    private OnFragmentInteractionListener mListener;
+    public static final String TAG = InboxFragment.class.getSimpleName();
     final ArrayList<TextMessage> textMsg = new ArrayList<TextMessage>();
+    TextMessageAdapter inboxAdapter ;
+    ListView listView;
+    private static InboxFragment inst;
+
+    public static InboxFragment instance() {
+        return inst;
+    }
+
 
     public InboxFragment() {
         // Required empty public constructor
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        inst = this;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,33 +54,10 @@ public class InboxFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_inbox, container, false);
 
         refreshSmsInbox();
-//        textMsg.add(new TextMessage("+919820243666", "5. The quick brown box jumped over the lazy dog. " +
-//                "There is no wonder in the dog being a lazy animal even though both are of the " +
-//                "same breed","25 Sep 2017 14:56", "Not Sent"));
-//
-//        textMsg.add(new TextMessage("+918779600355", "5. The quick brown box jumped over the lazy dog. " +
-//                "There is no wonder in the dog being a lazy animal even though both are of the " +
-//                "same breed","25 Sep 2017 13:21", "Sent"));
-//
-//        textMsg.add(new TextMessage("Vineet", "4. The quick brown box jumped over the lazy dog. " +
-//                "There is no wonder in the dog being a lazy animal even though both are of the " +
-//                "same breed","25 Aug 2017 08:08", "Not Sent"));
-//
-//        textMsg.add(new TextMessage("Punit", "3. The quick brown box jumped over the lazy dog. " +
-//                "There is no wonder in the dog being a lazy animal even though both are of the " +
-//                "same breed","25 July 2017 12:52", "Sent"));
-//
-//        textMsg.add(new TextMessage("Suneet", "2. The quick brown box jumped over the lazy dog. " +
-//                "There is no wonder in the dog being a lazy animal even though both are of the " +
-//                "same breed","25 June 2017 00:54", "Not Sent"));
-//
-//        textMsg.add(new TextMessage("Manish", "1. The quick brown box jumped over the lazy dog. " +
-//                "There is no wonder in the dog being a lazy animal even though both are of the " +
-//                "same breed","25 May 2017 05:23", "Not Sent"));
 
-        TextMessageAdapter inboxAdapter = new TextMessageAdapter(getActivity(),textMsg);
+        inboxAdapter = new TextMessageAdapter(getActivity(),textMsg);
 
-        ListView listView = (ListView)rootView.findViewById(R.id.activity_inbox);
+        listView = (ListView)rootView.findViewById(R.id.activity_inbox);
 
         listView.setAdapter(inboxAdapter);
 
@@ -76,22 +70,62 @@ public class InboxFragment extends Fragment {
         ContentResolver contentResolver = getContext().getContentResolver();
         Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"), null, null, null, null);
 
-        int indexBody = smsInboxCursor.getColumnIndex("body");
-        int indexAddress = smsInboxCursor.getColumnIndex("address");
-        int timeMillis = smsInboxCursor.getColumnIndex("date");
-        Date date = new Date(timeMillis);
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+//        int indexBody = smsInboxCursor.getColumnIndex("body");
+        int indexBody = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.BODY);
+//        int indexAddress = smsInboxCursor.getColumnIndex("address");
+        int indexAddress = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.ADDRESS);
+//        int dateReceived = smsInboxCursor.getColumnIndex("date");
+        int idSMS = smsInboxCursor.getColumnIndex(Telephony.Sms._ID);
+        int idSMSInbox = smsInboxCursor.getColumnIndex(Telephony.Sms.Inbox._ID);
+        int dateReceived = smsInboxCursor.getColumnIndex(Telephony.Sms.Inbox.DATE);
+        int dateSent = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.DATE_SENT);
+        int creator = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.CREATOR);
+        int person = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.PERSON);
+        int protocol = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.PROTOCOL);
+        int read = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.READ);
+        int seen = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.SEEN);
+        int status = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.STATUS);
+        int replyPathCenter = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.REPLY_PATH_PRESENT);
+        int serviceCenter = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.SERVICE_CENTER);
+        int threadID = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.THREAD_ID);
+        int type = smsInboxCursor.getColumnIndex(Telephony.TextBasedSmsColumns.TYPE);
+
+        Date date = new Date(dateReceived);
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy  HH:mm");
         String dateText = format.format(date);
 
         if (indexBody < 0 || !smsInboxCursor.moveToFirst()) return;
         textMsg.clear();
         do {
-            String str = smsInboxCursor.getString(indexAddress) +" at "+
-                    "\n" + smsInboxCursor.getString(indexBody) + dateText+ "\n";
-            dateText = format.format(new Date(smsInboxCursor.getLong(timeMillis)));
+//            String str = smsInboxCursor.getString(indexAddress) +" at "+
+//                    "\n" + smsInboxCursor.getString(indexBody) + dateText+ "\n";
+//            Log.i(TAG, "refreshSmsInbox: dateSent : "+format.format(new Date(smsInboxCursor.getLong(dateSent))));
+// DOES NOT WORK FOR API 16 Log.i(TAG, "refreshSmsInbox: creator : "+smsInboxCursor.getString(creator));
+//            Log.i(TAG, "refreshSmsInbox: "+smsInboxCursor.getString(indexAddress));
+//            Log.i(TAG, "refreshSmsInbox: person : "+smsInboxCursor.getString(person));
+//            Log.i(TAG, "refreshSmsInbox: protocol : "+smsInboxCursor.getString(protocol));
+//            Log.i(TAG, "refreshSmsInbox: read : "+smsInboxCursor.getString(read));
+//            Log.i(TAG, "refreshSmsInbox: seen : "+smsInboxCursor.getString(seen));
+//            Log.i(TAG, "refreshSmsInbox: status : "+smsInboxCursor.getString(status));
+//            Log.i(TAG, "refreshSmsInbox: replyPathCenter : "+smsInboxCursor.getString(replyPathCenter));
+//            Log.i(TAG, "refreshSmsInbox: serviceCenter : "+smsInboxCursor.getString(serviceCenter));
+//            Log.i(TAG, "refreshSmsInbox: threadID : "+smsInboxCursor.getString(threadID));
+//            Log.i(TAG, "refreshSmsInbox: type : "+smsInboxCursor.getString(type));
+//            Log.i(TAG, "refreshSmsInbox: "+"\\n");
+            Log.i(TAG, "refreshSmsInbox: ID SMS "+ smsInboxCursor.getInt(idSMS));
+            Log.i(TAG, "refreshSmsInbox: ID SMS Inbox"+ smsInboxCursor.getInt(idSMSInbox));
+
+            dateText = format.format(new Date(smsInboxCursor.getLong(dateReceived)));
             textMsg.add(new TextMessage(smsInboxCursor.getString(indexAddress), smsInboxCursor.getString(indexBody), dateText, "Not Sent"));
         } while (smsInboxCursor.moveToNext());
     }
+
+
+    public void updateList(final TextMessage smsMessage) {
+        textMsg.add(0, smsMessage);
+        inboxAdapter.notifyDataSetChanged();
+    }
+
 
 //    // TODO: Rename method, update argument and hook method into UI event
 //    public void onButtonPressed(Uri uri) {

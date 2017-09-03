@@ -34,6 +34,18 @@ public class MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    SmsBroadcastReceiver smsBroadcastReceiver;
+//    private static MainActivity inst;
+
+//    public static MainActivity instance() {
+//        return inst;
+//    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+//        inst = this;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT < 23){
             // we already should have permissions to read and send SMS as this was requested at install time
 //            smsrec = new SMSReceive(this);
+            smsBroadcastReceiver = new SmsBroadcastReceiver(this);
             startSMSApp();
         }
         else{
@@ -64,13 +77,10 @@ public class MainActivity extends AppCompatActivity {
             else {
                 // we can read and send sms and we have permissions
 //                smsrec = new SMSReceive(this);
+                smsBroadcastReceiver = new SmsBroadcastReceiver(this);
                 startSMSApp();
             }
         }
-
-
-
-
     }
 
     private void startSMSApp() {
@@ -98,7 +108,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if(requestCode == 222 && permissions.length > 0 &&
@@ -110,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 )){
             // permission granted
 //            smsrec = new SMSReceive(this);
+            smsBroadcastReceiver = new SmsBroadcastReceiver(this);
             startSMSApp();
         }
         else{
@@ -138,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+}
 
 //    /**
 //     * A placeholder fragment containing a simple view.
@@ -173,5 +186,3 @@ public class MainActivity extends AppCompatActivity {
 //            return rootView;
 //        }
 //    }
-
-}

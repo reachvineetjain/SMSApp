@@ -3,7 +3,7 @@ package com.nehvin.smsapp;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class Inbox extends AppCompatActivity {
+public class InboxActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

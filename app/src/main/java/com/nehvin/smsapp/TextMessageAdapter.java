@@ -58,11 +58,12 @@ public class TextMessageAdapter  extends ArrayAdapter <TextMessage>{
         datetime.setText(currentNumber.getDatetime());
 
         TextView message = listItemView.findViewById(R.id.message);
-        int msgLen = currentNumber.getMessage().length();
-        if(msgLen < 40)
-            message.setText(currentNumber.getMessage());
-        else
-            message.setText(currentNumber.getMessage().substring(0,40));
+        message.setText(currentNumber.getMessage());
+//        int msgLen = currentNumber.getMessage().length();
+//        if(msgLen < 40)
+//            message.setText(currentNumber.getMessage());
+//        else
+//            message.setText(currentNumber.getMessage().substring(0,40));
 
         TextView flag = listItemView.findViewById(R.id.flag);
         flag.setText(currentNumber.getFlag());
